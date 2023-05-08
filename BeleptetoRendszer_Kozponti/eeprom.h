@@ -24,7 +24,7 @@ uint16_t EEPROM_GetSize(void);
 
 const uint8_t *EEPROM_GetMemoryImage(void);
 
-void EEPROM_Write(uint16_t address, uint8_t *data, uint16_t length);
+void EEPROM_Write(uint16_t address, const uint8_t *data, uint16_t length);
 
 void EEPROM_Read(uint16_t address, uint8_t *data, uint16_t length);
 

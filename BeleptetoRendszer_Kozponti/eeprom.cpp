@@ -65,7 +65,7 @@ const uint8_t *EEPROM_GetMemoryImage(void)
  * @param data The data to write.
  * @param length The length of the data.
  */
-void EEPROM_Write(uint16_t address, uint8_t *data, uint16_t length)
+void EEPROM_Write(uint16_t address, const uint8_t *data, uint16_t length)
 {
     if (address + length > EEPROM_24LC64_SIZE)
     {
@@ -75,6 +75,11 @@ void EEPROM_Write(uint16_t address, uint8_t *data, uint16_t length)
 
     for (uint16_t i = 0; i < length; i++)
     {
+        if (memoryImage[address + i] == data[i])
+        {
+            // The data is the same as in the memory image
+            continue;
+        }
         memoryImage[address + i] = data[i];
         updatedPage[(address + i) / EEPROM_24LC64_PAGE_SIZE] = true;
     }
@@ -94,7 +99,7 @@ void EEPROM_Read(uint16_t address, uint8_t *data, uint16_t length)
         // Trying to read outside of the EEPROM
         return;
     }
-    
+
     for (uint16_t i = 0; i < length; i++)
     {
         data[i] = memoryImage[address + i];
@@ -128,7 +133,9 @@ void EEPROM_MemoryImage_Commit(void)
             // Only write pages that have been updated
             continue;
         }
-        eeprom.writePage(i * EEPROM_24LC64_PAGE_SIZE, &memoryImage[i * EEPROM_24LC64_PAGE_SIZE], EEPROM_24LC64_PAGE_SIZE);
+        eeprom.writePage(i * EEPROM_24LC64_PAGE_SIZE,
+                         &(memoryImage[i * EEPROM_24LC64_PAGE_SIZE]),
+                         EEPROM_24LC64_PAGE_SIZE);
         delay(EEPROM_24LC64_WRITE_DELAY_MS);
     }
 }
