@@ -1,8 +1,21 @@
+/**
+ ***************************************************************************************************
+ * @file AuthenticateData.hpp
+ * @author Péter Varga
+ * @date 2023. 05. 08.
+ ***************************************************************************************************
+ * @brief This file contains the definition of the AuthenticateData class.
+ ***************************************************************************************************
+ */
+
 #pragma once
 
 #include <cstdint>
 #include <cstring>
 
+/**
+ * @brief This class represents the data needed for authentication.
+ */
 class AuthenticateData
 {
 private:

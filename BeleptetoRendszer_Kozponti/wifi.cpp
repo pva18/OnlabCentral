@@ -2,7 +2,7 @@
  ***************************************************************************************************
  * @file wifi.cpp
  * @author Péter Varga
- * @date 2023. 05. 04.
+ * @date 2023. 05. 08.
  ***************************************************************************************************
  * @brief Implementation of wifi.h.
  ***************************************************************************************************
@@ -56,6 +56,10 @@ void sendTime(WiFiClient &client, int size);
 void receiveMemory(WiFiClient &client, int size);
 void processRemoteData(WiFiClient &client);
 
+/**
+ * @brief Initialize the WiFi module.
+ * @return True if the initialization was successful, false otherwise.
+ */
 bool WIFI_Init(void)
 {
     if (!WiFi.mode(WIFI_AP))
@@ -75,7 +79,9 @@ bool WIFI_Init(void)
     return true;
 }
 
-
+/**
+ * @brief Handle the WiFi clients.
+ */
 void WIFI_HandleClients(void)
 {
     if (!isWifiInitialized)

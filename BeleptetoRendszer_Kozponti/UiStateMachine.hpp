@@ -1,3 +1,13 @@
+/**
+ ***************************************************************************************************
+ * @file UiStateMachine.hpp
+ * @author Péter Varga
+ * @date 2023. 05. 08.
+ ***************************************************************************************************
+ * @brief This file contains the definition of the UiStateMachine class.
+ ***************************************************************************************************
+ */
+
 #pragma once
 
 #include <cstdio>
@@ -8,16 +18,22 @@
 #include "AuthenticateList.hpp"
 #include "realtime.h"
 
+/**
+ * @brief This class represents the state machine of the user interface.
+ */
 class UiStateMachine
 {
 public:
+    /**
+     * @brief This enum represents the buttons of the user interface.
+     */
     enum class Button
     {
-        NONE,
-        ENTER,
-        BACK,
-        LEFT,
-        RIGHT
+        NONE,  /**< No button was pressed */
+        ENTER, /**< Enter button was pressed */
+        BACK,  /**< Back button was pressed */
+        LEFT,  /**< Left button was pressed */
+        RIGHT  /**< Right button was pressed */
     };
 
 private:
@@ -51,19 +67,29 @@ private:
     bool editStarted = false;
 
 public:
+    /**
+     * @brief Construct a new Ui State Machine object.
+     * @param authenticate_list List that contains the authetication data
+     * @param lcd LCD display
+     */
     UiStateMachine(AuthenticateList *authenticate_list, LCD_I2C *lcd)
         : authenticate_list(authenticate_list), lcd(lcd)
     {
     }
 
+    /**
+     * @brief Update the state machine.
+     * @param button Button that was pressed
+     * @param millis_current Current time in milliseconds
+     */
     void update(Button button, unsigned long millis_current)
     {
-        if(button != Button::NONE)
+        if (button != Button::NONE)
         {
             lcd->backlight();
             millis_last_interaction = millis_current;
         }
-        else if(millis_current - millis_last_interaction > millisIdleTimeout)
+        else if (millis_current - millis_last_interaction > millisIdleTimeout)
         {
             lcd->noBacklight();
         }

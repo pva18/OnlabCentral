@@ -1,3 +1,13 @@
+/**
+ ***************************************************************************************************
+ * @file BeleptetoRendszer_Kozponti.ino
+ * @author Péter Varga
+ * @date 2023. 05. 08.
+ ***************************************************************************************************
+ * @brief This file contains the main program of the central module.
+ ***************************************************************************************************
+ */
+
 #include "BeleptetoRendszer_Kozponti.h"
 
 #include <Arduino.h>
@@ -19,12 +29,18 @@
 #define DEBUG_PRINT(str)
 #endif /* DEBUG */
 
+/** @brief LCD display object. */
 LCD_I2C lcd(0x27, 16, 2);
-
+/** @brief Data list manager object. */
 DataListManager dataListManager;
-
+/** @brief UI state machine object. */
 UiStateMachine uiStateMachine(&(dataListManager.authList), &lcd);
 
+/**
+ * @defgroup button_state_bits Button state bits
+ * @brief Bits for button states.
+ * @{
+ */
 #define BUTTON_E_PRESSED_BIT (1 << 0)
 #define BUTTON_E_RELEASED_BIT (1 << 1)
 #define BUTTON_1_PRESSED_BIT (1 << 2)
@@ -33,12 +49,20 @@ UiStateMachine uiStateMachine(&(dataListManager.authList), &lcd);
 #define BUTTON_2_RELEASED_BIT (1 << 5)
 #define BUTTON_3_PRESSED_BIT (1 << 6)
 #define BUTTON_3_RELEASED_BIT (1 << 7)
+/** @} */
+
+/** @brief Stores the button states. */
 uint32_t buttonSinglePressStates = 0;
 
+/** @brief Begin marker of the message. */
 const char messageBeginMarker = '<';
+/** @brief End marker of the message. */
 const char messageEndMarker = '>';
+/** @brief Message buffer. */
 char message[64 + 1];
+/** @brief Index of the message buffer. */
 int messageIndex = 0;
+/** @brief Stores if the message has started. */
 bool messageStarted = false;
 
 void ioPinsInit(void);
@@ -48,6 +72,9 @@ uint32_t ioButtonGetSinglePressStates(uint32_t bitMask);
 void processMessage(const char *msg);
 void revceiveMessage(void);
 
+/**
+ * @brief Arduino setup function.
+ */
 void setup()
 {
     Serial.begin(115200);
@@ -106,6 +133,9 @@ void setup()
     lcd.backlight();
 }
 
+/**
+ * @brief Arduino loop function.
+ */
 void loop()
 {
     static uint8_t ledState = LED_OFF;
@@ -130,13 +160,6 @@ void loop()
     if (current_millis - lastMillisSlow > 500)
     {
         lastMillisSlow = current_millis;
-        DEBUG_PRINT("Update\r\n");
-        DEBUG_PRINT("Free heap: ");
-        DEBUG_PRINT(ESP.getFreeHeap());
-        DEBUG_PRINT("\r\n");
-        DEBUG_PRINT("Free stack: ");
-        DEBUG_PRINT(ESP.getFreeContStack());
-        DEBUG_PRINT("\r\n");
         DEBUG_PRINT("Items in list: ");
         DEBUG_PRINT((dataListManager.authList).size());
         DEBUG_PRINT("\r\n");
@@ -172,6 +195,10 @@ void loop()
     revceiveMessage();
 }
 
+/**
+ * @brief Process the received message.
+ * @param msg The received message.
+ */
 void processMessage(const char *msg)
 {
     String message(msg);
@@ -238,6 +265,9 @@ void processMessage(const char *msg)
     }
 }
 
+/**
+ * @brief Initialize the IO pins.
+ */
 void ioPinsInit(void)
 {
     pinMode(BUTTON_1_PIN, INPUT);
@@ -254,6 +284,9 @@ void ioPinsInit(void)
     digitalWrite(LED_3_PIN, LED_ON);
 }
 
+/**
+ * @brief Sample the IO buttons.
+ */
 void ioButtonSample(void)
 {
     static uint8_t button1Prev = !BUTTON_PRESSED;
@@ -317,6 +350,12 @@ void ioButtonSample(void)
     buttonEPrev = buttonE;
 }
 
+/**
+ * @brief Get the IO button states.
+ * @param bitMask The bit mask of the buttons to get the states of.
+ * @return The button states.
+ * @note The returned states are cleared.
+ */
 uint32_t ioButtonGetSinglePressStates(uint32_t bitMask)
 {
     uint32_t states = buttonSinglePressStates & bitMask;
@@ -324,6 +363,10 @@ uint32_t ioButtonGetSinglePressStates(uint32_t bitMask)
     return states;
 }
 
+/**
+ * @brief Receive a message from the serial port.
+ * @note This function is non-blocking.
+ */
 void revceiveMessage(void)
 {
     while (Serial.available() > 0)

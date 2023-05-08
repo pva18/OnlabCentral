@@ -1,3 +1,13 @@
+/**
+ ***************************************************************************************************
+ * @file DataListManager.hpp
+ * @author Péter Varga
+ * @date 2023. 05. 08.
+ ***************************************************************************************************
+ * @brief This file contains the definition of the DataListManager class.
+ ***************************************************************************************************
+ */
+
 #pragma once
 
 #include <cstdint>
@@ -7,10 +17,19 @@
 #include "eeprom.h"
 #include "realtime.h"
 
+/**
+ * @brief This class manages the data lists.
+ */
 class DataListManager
 {
 public:
+    /**
+     * @brief List of authentication data.
+     */
     AuthenticateList authList;
+    /**
+     * @brief List of log data.
+     */
     LogList logList;
 
 private:
@@ -38,12 +57,19 @@ private:
     eeprom_header_t local_header;
 
 public:
+    /**
+     * @brief Default constructor
+     */
     DataListManager(void)
         : AUTHENTICATE_BASE_ADDRESS(HEADER_SIZE),
           LOG_BASE_ADDRESS(EEPROM_SIZE / 2)
     {
     }
 
+    /**
+     * @brief Initializes the data lists.
+     * @note This function must be called before using the data lists and after the EEPROM initialization.
+     */
     void Initialize(void)
     {
         EEPROM_MemoryImage_Update();
@@ -91,6 +117,11 @@ public:
         extractLogData(memory_image, EEPROM_SIZE, &local_header);
     }
 
+    /**
+     * @brief Extract data from an EEPROM image and update the data lists with it.
+     * @param memory_image Memory image of the EEPROM
+     * @param size Size of the memory image
+     */
     void extractListFromEepromImage(const uint8_t *memory_image, uint16_t size)
     {
         eeprom_header_t header;
@@ -99,6 +130,9 @@ public:
         extractLogData(memory_image, size, &header);
     }
 
+    /**
+     * @brief Update the EEPROM image with the data lists.
+     */
     void updateEepromFromList(void)
     {
         updateEepromHeader();
