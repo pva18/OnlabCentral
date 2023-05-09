@@ -14,6 +14,10 @@
 #include "eeprom.h"
 #include "realtime.h"
 
+#include "DataListManager.hpp"
+
+extern DataListManager dataListManager;
+
 /**
  * @defgroup wifi_time_constants WiFi time constants
  * @brief Constants for timing the WiFi communication.
@@ -43,9 +47,7 @@ const char *host = WIFI_CENTRAL_IP;
 /** @brief The port of the central server. */
 const uint16_t port = WIFI_CENTRAL_PORT;
 
-// TODO: implement the communication with the central module
-uint8_t memoryImageReceived[EEPROM_SIZE][2];
-uint8_t activeMemoryImageReceived = 0;
+uint8_t memoryImageReceived[EEPROM_SIZE];
 
 bool isWifiInitialized = false;
 
@@ -74,7 +76,7 @@ bool WIFI_Init(void)
 
     server.begin();
 
-        isWifiInitialized = true;
+    isWifiInitialized = true;
 
     return true;
 }
@@ -100,7 +102,7 @@ void WIFI_HandleClients(void)
 
 void sendMemory(WiFiClient &client, int size)
 {
-    if(size > EEPROM_GetSize())
+    if (size > EEPROM_GetSize())
     {
         client.print("0\n");
         return;
@@ -108,7 +110,7 @@ void sendMemory(WiFiClient &client, int size)
 
     uint8_t data[8];
 
-    while(size > 0)
+    while (size > 0)
     {
         EEPROM_Read(size, data, 8);
         client.write(data, 8);
@@ -118,7 +120,7 @@ void sendMemory(WiFiClient &client, int size)
 
 void sendTime(WiFiClient &client, int size)
 {
-    if(REALTIME_IsSet())
+    if (REALTIME_IsSet())
     {
         client.print("0\n");
     }
@@ -131,17 +133,19 @@ void sendTime(WiFiClient &client, int size)
 
 void receiveMemory(WiFiClient &client, int size)
 {
-    if(size > EEPROM_GetSize())
+    if (size > EEPROM_GetSize())
     {
         return;
     }
 
-    while(size > 0)
+    int i = 0;
+    while (size > i)
     {
-        int readSize = client.readBytes(memoryImageReceived[activeMemoryImageReceived], size > 8 ? 8 : size);
-        size -= readSize;
+        int readSize = client.readBytes(memoryImageReceived, size > 8 ? 8 : size);
+        i += readSize;
     }
-    activeMemoryImageReceived = (activeMemoryImageReceived + 1) % 2;
+
+    dataListManager.extractListFromEepromImage(memoryImageReceived, i);
 }
 
 void processRemoteData(WiFiClient &client)
@@ -164,7 +168,7 @@ void processRemoteData(WiFiClient &client)
     int size = client.parseInt();
     client.read(); // skip the whitespace
 
-    if(type == 'N')
+    if (type == 'N')
     {
         sendMemory(client, size);
     }
@@ -172,7 +176,7 @@ void processRemoteData(WiFiClient &client)
     {
         sendTime(client, size);
     }
-    else if(type == 'M')
+    else if (type == 'M')
     {
         receiveMemory(client, size);
     }
