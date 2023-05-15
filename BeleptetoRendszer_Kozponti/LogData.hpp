@@ -19,10 +19,11 @@ private:
 
     uint8_t uid[10];
     uint32_t timestamp;
+    uint8_t auth;
 
 public:
     /**
-     * @brief Default constructor
+     * @brief Default constructor.
      */
     LogData(void)
     {
@@ -31,37 +32,41 @@ public:
             uid[i] = 0;
         }
         timestamp = 0;
+        auth = 0;
     }
 
     /**
-     * @brief Constructor with data initialization
+     * @brief Constructor with data initialization.
      * @param uid UID of an RFID tag
      * @param timestamp Timestamp of the log
+     * @param auth Authentication state, 1 if authentication was successful, otherwise 0
      */
-    LogData(const uint8_t *uid, uint32_t timestamp)
+    LogData(const uint8_t *uid, uint32_t timestamp, uint8_t auth)
     {
         for (int i = 0; i < uidSize; i++)
         {
             this->uid[i] = uid[i];
         }
         this->timestamp = timestamp;
+        this->auth = auth;
     }
 
     /**
-     * @brief Copy constructor
+     * @brief Copy constructor.
      * @param other Other LogData object
      */
-    LogData(const LogData &logData)
+    LogData(const LogData &other)
     {
         for (int i = 0; i < uidSize; i++)
         {
-            uid[i] = logData.uid[i];
+            uid[i] = other.uid[i];
         }
-        timestamp = logData.timestamp;
+        timestamp = other.timestamp;
+        auth = other.auth;
     }
 
     /**
-     * @brief Get the size of the UID
+     * @brief Get the size of the UID.
      * @return Size of the UID
      */
     int getUidSize(void) const
@@ -70,7 +75,7 @@ public:
     }
 
     /**
-     * @brief Get the UID
+     * @brief Get the UID.
      * @return UID
      */
     uint8_t *getUid(void) const
@@ -79,7 +84,7 @@ public:
     }
 
     /**
-     * @brief Get the timestamp
+     * @brief Get the timestamp.
      * @return Timestamp
      */
     uint32_t getTimestamp() const
@@ -88,47 +93,57 @@ public:
     }
 
     /**
-     * @brief Assignment operator
+     * @brief Get the authentication state.
+     * @return Authentication state
+     */
+    uint8_t getAuthentication() const
+    {
+        return auth;
+    }
+
+    /**
+     * @brief Assignment operator.
      * @param other Other LogData object
      * @return Reference to this object
      */
-    LogData &operator=(const LogData &logData)
+    LogData &operator=(const LogData &other)
     {
         for (int i = 0; i < uidSize; i++)
         {
-            uid[i] = logData.uid[i];
+            uid[i] = other.uid[i];
         }
-        timestamp = logData.timestamp;
+        timestamp = other.timestamp;
+        auth = other.auth;
         return *this;
     }
 
     /**
-     * @brief Equality operator
+     * @brief Equality operator.
      * @param other Other LogData object
      * @return True if the two objects are equal
      */
-    bool operator==(const LogData &logData) const
+    bool operator==(const LogData &other) const
     {
         for (int i = 0; i < uidSize; i++)
         {
-            if (uid[i] != logData.uid[i])
+            if (uid[i] != other.uid[i])
             {
                 return false;
             }
         }
-        return (timestamp == logData.timestamp);
+        return ((timestamp == other.timestamp) && (auth == other.auth));
     }
 
     /**
-     * @brief Convert the object to a string
+     * @brief Convert the object to a string.
      * @param str String to be filled
-     * @note Format: "UID{20} TIMESTAMP{10}"
+     * @note Format: "UID{20} TIMESTAMP{10} AUTHENTICATION{1}"
      */
     void toString(char *str) const
     {
-        sprintf(str, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %010u",
+        sprintf(str, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %010u %u",
                 uid[0], uid[1], uid[2], uid[3], uid[4],
                 uid[5], uid[6], uid[7], uid[8], uid[9],
-                timestamp);
+                timestamp, auth);
     }
 }; // LogData

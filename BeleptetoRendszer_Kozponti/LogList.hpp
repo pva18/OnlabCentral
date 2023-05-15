@@ -33,10 +33,11 @@ public:
      * @brief Add a new log to the list.
      * @param uid UID of an RFID tag
      * @param timestamp Timestamp of the log
+     * @param auth Authentication state
      */
-    void add(const uint8_t *uid, uint32_t timestamp)
+    void add(const uint8_t *uid, uint32_t timestamp, uint8_t auth)
     {
-        LogData logData(uid, timestamp);
+        LogData logData(uid, timestamp, auth);
         logList.enqueue(&logData);
     }
 
@@ -53,8 +54,9 @@ public:
      * @brief Add a new log to the list.
      * @param uid UID of an RFID tag
      * @param timestamp Timestamp of the log
+     * @param auth Authentication state
      */
-    void add(const char *uid, uint32_t timestamp)
+    void add(const char *uid, uint32_t timestamp, uint8_t auth)
     {
         uint8_t uid_bytes[10];
         sscanf(uid, "%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx",
@@ -62,7 +64,7 @@ public:
                &uid_bytes[4], &uid_bytes[5], &uid_bytes[6], &uid_bytes[7],
                &uid_bytes[8], &uid_bytes[9]);
 
-        add(uid_bytes, timestamp);
+        add(uid_bytes, timestamp, auth);
     }
 
     /**

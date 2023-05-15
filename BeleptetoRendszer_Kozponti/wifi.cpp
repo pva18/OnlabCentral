@@ -102,25 +102,30 @@ void WIFI_HandleClients(void)
 
 void sendMemory(WiFiClient &client, int size)
 {
-    if (size > EEPROM_GetSize())
+    if (size > EEPROM_SIZE)
     {
         client.print("0\n");
         return;
     }
 
-    uint8_t data[8];
+    Serial.println("Start sending memory image...");
 
-    while (size > 0)
+    const uint8_t *data = EEPROM_GetMemoryImage();
+    size_t s = client.write(data, size);
+    Serial.println(s);
+    if (s != size)
     {
-        EEPROM_Read(size, data, 8);
-        client.write(data, 8);
-        size -= 8;
+        Serial.println("Error sending memory image.");
+        return;
     }
+
+    Serial.println("Memory image sent.");
 }
 
 void sendTime(WiFiClient &client, int size)
 {
-    if (REALTIME_IsSet())
+    Serial.println("Start sending time...");
+    if (!REALTIME_IsSet())
     {
         client.print("0\n");
     }
@@ -129,6 +134,7 @@ void sendTime(WiFiClient &client, int size)
         client.print(REALTIME_Get());
         client.print('\n');
     }
+    Serial.println("Time sent.");
 }
 
 void receiveMemory(WiFiClient &client, int size)
@@ -138,14 +144,25 @@ void receiveMemory(WiFiClient &client, int size)
         return;
     }
 
-    int i = 0;
+    Serial.println("Start receiving memory image...");
+
+    size_t i = 0;
     while (size > i)
     {
-        int readSize = client.readBytes(memoryImageReceived, size > 8 ? 8 : size);
+        size_t readSize = client.readBytes(&(memoryImageReceived[i]), size > 8 ? 8 : size);
         i += readSize;
     }
+    if (i != size)
+    {
+        Serial.println("Error receiving memory image.");
+        return;
+    }
+
+    Serial.println("Memory image received.");
 
     dataListManager.extractListFromEepromImage(memoryImageReceived, i);
+
+    Serial.println("Memory image processed.");
 }
 
 void processRemoteData(WiFiClient &client)
@@ -170,14 +187,17 @@ void processRemoteData(WiFiClient &client)
 
     if (type == 'N')
     {
+        Serial.println("Sending memory image...");
         sendMemory(client, size);
     }
     else if (type == 'T')
     {
+        Serial.println("Sending time...");
         sendTime(client, size);
     }
     else if (type == 'M')
     {
+        Serial.println("Receiving memory image...");
         receiveMemory(client, size);
     }
 }

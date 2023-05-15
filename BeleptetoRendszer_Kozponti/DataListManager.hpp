@@ -126,7 +126,14 @@ public:
     {
         eeprom_header_t header;
         extractEepromHeader(memory_image, size, &header);
-        extractAuthenticateData(memory_image, size, &header);
+        if ((header.headerSize != HEADER_SIZE) ||
+            (header.authenticateBaseAddress != AUTHENTICATE_BASE_ADDRESS) ||
+            (header.logBaseAddress != LOG_BASE_ADDRESS))
+        {
+            return;
+        }
+
+        // extractAuthenticateData(memory_image, size, &header);
         extractLogData(memory_image, size, &header);
     }
 
@@ -220,27 +227,29 @@ private:
     {
         uint16_t address = header->logBaseAddress;
 
-        // Format: UID{10} + TIME{4} = 14
-        uint8_t log_data[14];
+        // Format: UID{10} + TIME{4} + AUTH{1} = 15
+        uint8_t log_data[15];
+        uint8_t uid[10];
+        uint32_t time;
+        uint8_t auth;
 
-        for (uint16_t i = 0; i < header->logLength / 14; i++, address += 14)
+        for (uint16_t address = header->logBaseAddress;
+             address < header->logBaseAddress + header->logLength;
+             address += 15)
         {
-            for (uint16_t j = 0; j < 14; j++)
+            for (uint16_t j = 0; j < 15; j++)
             {
                 log_data[j] = memory_image[address + j];
             }
-
-            uint8_t uid[10];
-            uint32_t time;
 
             for (uint16_t j = 0; j < 10; j++)
             {
                 uid[j] = log_data[j];
             }
-
             time = (log_data[10] << 24) | (log_data[11] << 16) | (log_data[12] << 8) | log_data[13];
+            auth = log_data[14];
 
-            logList.add(uid, time);
+            logList.add(uid, time, auth);
         }
     }
 
@@ -308,16 +317,19 @@ private:
     void updateEepromLogData(void)
     {
         uint16_t address = local_header.logBaseAddress;
-        for (int i = 0; i < logList.size(); i++, address += 14)
+        for (int i = 0; i < logList.size(); i++, address += 15)
         {
             uint32_t timestamp = logList.get(i)->getTimestamp();
             uint8_t buffer[4];
             buffer[0] = timestamp >> 24;
-            buffer[1] = timestamp >> 16 & 0xFF;
-            buffer[2] = timestamp >> 8 & 0xFF;
+            buffer[1] = (timestamp >> 16) & 0xFF;
+            buffer[2] = (timestamp >> 8) & 0xFF;
             buffer[3] = timestamp & 0xFF;
+            uint8_t auth = logList.get(i)->getAuthentication();
+
             EEPROM_Write(address, logList.get(i)->getUid(), 10);
             EEPROM_Write(address + 10, buffer, 4);
+            EEPROM_Write(address + 14, &auth, 1);
         }
     }
 }; // DataListManager

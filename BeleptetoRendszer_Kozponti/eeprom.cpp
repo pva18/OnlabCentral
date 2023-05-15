@@ -111,7 +111,13 @@ void EEPROM_Read(uint16_t address, uint8_t *data, uint16_t length)
  */
 void EEPROM_MemoryImage_Update(void)
 {
-    eeprom.readMultiBytes(0, memoryImage, EEPROM_24LC64_SIZE);
+    // Read the whole EEPROM in page size chunks
+    for (uint16_t i = 0; i < EEPROM_24LC64_SIZE_IN_PAGES; i++)
+    {
+        eeprom.readMultiBytes(i * EEPROM_24LC64_PAGE_SIZE,
+                              &(memoryImage[i * EEPROM_24LC64_PAGE_SIZE]),
+                              EEPROM_24LC64_PAGE_SIZE);
+    }
 }
 
 /**
@@ -133,6 +139,7 @@ void EEPROM_MemoryImage_Commit(void)
             // Only write pages that have been updated
             continue;
         }
+        updatedPage[i] = false;
         eeprom.writePage(i * EEPROM_24LC64_PAGE_SIZE,
                          &(memoryImage[i * EEPROM_24LC64_PAGE_SIZE]),
                          EEPROM_24LC64_PAGE_SIZE);

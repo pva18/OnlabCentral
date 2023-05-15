@@ -160,9 +160,6 @@ void loop()
     if (current_millis - lastMillisSlow > 500)
     {
         lastMillisSlow = current_millis;
-        DEBUG_PRINT("Items in list: ");
-        DEBUG_PRINT((dataListManager.authList).size());
-        DEBUG_PRINT("\r\n");
 
         // Handle user interface and EEPROM update infrequently to save CPU time
 
@@ -190,6 +187,32 @@ void loop()
         dataListManager.updateEepromFromList();
     }
 
+#ifdef DEBUG
+    static unsigned long lastMillisDebug = 0;
+    if (current_millis - lastMillisDebug > (15 * 1000))
+    {
+        lastMillisDebug = current_millis;
+
+        // EEPROM_MemoryImage_Update();
+        // for (uint16_t i = 0; i < EEPROM_GetSize(); i++)
+        // {
+        //     uint8_t data;
+        //     char buffer[4 + 1];
+        //     EEPROM_Read(i, &data, 1);
+        //     sprintf(buffer, "%02X", data);
+        //     DEBUG_PRINT(buffer);
+        //     if (i % 32 == 31)
+        //     {
+        //         DEBUG_PRINT("\r\n");
+        //     }
+        //     else
+        //     {
+        //         DEBUG_PRINT(" ");
+        //     }
+        // }
+    }
+#endif /* DEBUG */
+
     // Handle communication tasks the most frequently to avoid missing messages and timeouts
     WIFI_HandleClients();
     revceiveMessage();
@@ -202,9 +225,6 @@ void loop()
 void processMessage(const char *msg)
 {
     String message(msg);
-    DEBUG_PRINT("Message: ");
-    DEBUG_PRINT(message);
-    DEBUG_PRINT("\r\n");
 
     if (message[0] == 'A')
     {
@@ -259,9 +279,14 @@ void processMessage(const char *msg)
         {
             (dataListManager.authList).get(i)->toString(buffer);
             Serial.print(buffer);
-        Serial.print("\n");
+            Serial.print("\n");
         }
         Serial.print(">");
+    }
+    else if (message[0] = 'C')
+    {
+        // Clear log list
+        (dataListManager.logList).clear();
     }
 }
 
