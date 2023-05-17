@@ -54,13 +54,13 @@ private:
 
     State state = State::IDLE;
 
-    const unsigned long millisIdleTimeout = 30000;
+    const unsigned long MILLIS_IDLE_TIMEOUT = 30000;
 
-    AuthenticateList *authenticate_list;
+    AuthenticateList *authList;
     LCD_I2C *lcd;
 
-    int selected_item = 0;
-    unsigned long millis_last_interaction = 0;
+    int selectedItem = 0;
+    unsigned long millisLastInteraction = 0;
     int editedPart = 0;
     uint32_t editTimeHour;
     uint32_t editTimeMinute;
@@ -73,7 +73,7 @@ public:
      * @param lcd LCD display
      */
     UiStateMachine(AuthenticateList *authenticate_list, LCD_I2C *lcd)
-        : authenticate_list(authenticate_list), lcd(lcd)
+        : authList(authenticate_list), lcd(lcd)
     {
     }
 
@@ -82,14 +82,14 @@ public:
      * @param button Button that was pressed
      * @param millis_current Current time in milliseconds
      */
-    void update(Button button, unsigned long millis_current)
+    void Update(Button button, unsigned long millis_current)
     {
         if (button != Button::NONE)
         {
             lcd->backlight();
-            millis_last_interaction = millis_current;
+            millisLastInteraction = millis_current;
         }
-        else if (millis_current - millis_last_interaction > millisIdleTimeout)
+        else if (millis_current - millisLastInteraction > MILLIS_IDLE_TIMEOUT)
         {
             lcd->noBacklight();
         }
@@ -198,12 +198,12 @@ public:
             break;
 
         case State::OPTION_SELECT_ITEM:
-            displayList(selected_item);
+            displayList(selectedItem);
 
             switch (button)
             {
             case Button::ENTER:
-                if (authenticate_list->size() > 0)
+                if (authList->size() > 0)
                 {
                     state = State::VIEW_NAME;
                 }
@@ -224,7 +224,7 @@ public:
             break;
 
         case State::VIEW_NAME:
-            displayName(selected_item);
+            displayName(selectedItem);
 
             switch (button)
             {
@@ -243,7 +243,7 @@ public:
             break;
 
         case State::VIEW_UID:
-            displayUid(selected_item);
+            displayUid(selectedItem);
 
             switch (button)
             {
@@ -262,7 +262,7 @@ public:
             break;
 
         case State::VIEW_INTERVAL_START:
-            displayIntervalStart(selected_item);
+            displayIntervalStart(selectedItem);
 
             switch (button)
             {
@@ -285,7 +285,7 @@ public:
             break;
 
         case State::VIEW_INTERVAL_END:
-            displayIntervalEnd(selected_item);
+            displayIntervalEnd(selectedItem);
 
             switch (button)
             {
@@ -311,11 +311,11 @@ public:
             if (!editStarted)
             {
                 editStarted = true;
-                editTimeHour = (*authenticate_list)[selected_item]->getIntervalStart() % (60 * 60 * 24) / (60 * 60);
-                editTimeMinute = (*authenticate_list)[selected_item]->getIntervalStart() % (60 * 60) / 60;
+                editTimeHour = (*authList)[selectedItem]->getIntervalStart() % (60 * 60 * 24) / (60 * 60);
+                editTimeMinute = (*authList)[selectedItem]->getIntervalStart() % (60 * 60) / 60;
             }
 
-            displayEditIntervalStart(selected_item, editedPart);
+            displayEditIntervalStart(selectedItem, editedPart);
 
             switch (button)
             {
@@ -347,7 +347,7 @@ public:
                 break;
 
             case Button::BACK:
-                (*authenticate_list)[selected_item]->setIntervalStart(editTimeHour * (60 * 60) + editTimeMinute * 60);
+                (*authList)[selectedItem]->setIntervalStart(editTimeHour * (60 * 60) + editTimeMinute * 60);
 
                 editStarted = false;
                 state = State::VIEW_INTERVAL_START;
@@ -359,11 +359,11 @@ public:
             if (!editStarted)
             {
                 editStarted = true;
-                editTimeHour = (*authenticate_list)[selected_item]->getIntervalEnd() % (60 * 60 * 24) / (60 * 60);
-                editTimeMinute = (*authenticate_list)[selected_item]->getIntervalEnd() % (60 * 60) / 60;
+                editTimeHour = (*authList)[selectedItem]->getIntervalEnd() % (60 * 60 * 24) / (60 * 60);
+                editTimeMinute = (*authList)[selectedItem]->getIntervalEnd() % (60 * 60) / 60;
             }
 
-            displayEditIntervalEnd(selected_item, editedPart);
+            displayEditIntervalEnd(selectedItem, editedPart);
 
             switch (button)
             {
@@ -395,7 +395,7 @@ public:
                 break;
 
             case Button::BACK:
-                (*authenticate_list)[selected_item]->setIntervalEnd(editTimeHour * (60 * 60) + editTimeMinute * 60);
+                (*authList)[selectedItem]->setIntervalEnd(editTimeHour * (60 * 60) + editTimeMinute * 60);
 
                 editStarted = false;
                 state = State::VIEW_INTERVAL_END;
@@ -406,31 +406,21 @@ public:
     }
 
 private:
-    bool millisIsTimeout(Button button, unsigned long millis_current)
-    {
-        if (button != Button::NONE)
-        {
-            millis_last_interaction = millis_current;
-            return false;
-        }
-        return ((millis_current - millis_last_interaction) > millisIdleTimeout);
-    }
-
     void incrementSelected(void)
     {
-        selected_item++;
-        if (selected_item >= (*authenticate_list).size())
+        selectedItem++;
+        if (selectedItem >= (*authList).size())
         {
-            selected_item = 0;
+            selectedItem = 0;
         }
     }
 
     void decrementSelected(void)
     {
-        selected_item--;
-        if (selected_item < 0)
+        selectedItem--;
+        if (selectedItem < 0)
         {
-            selected_item = (*authenticate_list).size() - 1;
+            selectedItem = (*authList).size() - 1;
         }
     }
 
@@ -490,14 +480,14 @@ private:
 
     void displayList(int selected_item)
     {
-        if ((*authenticate_list).size() < 1)
+        if ((*authList).size() < 1)
         {
             lcd->clear();
             lcd->setCursor(0, 0);
             lcd->print("Ures lista");
             return;
         }
-        const AuthenticateData *item = (*authenticate_list)[selected_item];
+        const AuthenticateData *item = (*authList)[selected_item];
         lcd->clear();
         lcd->setCursor(0, 0);
         lcd->print("Lista elem:");
@@ -507,7 +497,7 @@ private:
 
     void displayName(int selected_item)
     {
-        const AuthenticateData *item = (*authenticate_list)[selected_item];
+        const AuthenticateData *item = (*authList)[selected_item];
         lcd->clear();
         lcd->setCursor(0, 0);
         lcd->print("Nev: ");
@@ -517,7 +507,7 @@ private:
 
     void displayUid(int selected_item)
     {
-        const AuthenticateData *item = (*authenticate_list)[selected_item];
+        const AuthenticateData *item = (*authList)[selected_item];
         const uint8_t *uid = item->getUid();
 
         char display_str0[17];
@@ -534,7 +524,7 @@ private:
 
     void displayIntervalStart(int selected_item)
     {
-        const AuthenticateData *item = (*authenticate_list)[selected_item];
+        const AuthenticateData *item = (*authList)[selected_item];
         uint32_t interval_start = item->getIntervalStart();
         uint32_t hour = interval_start % (60 * 60 * 24) / (60 * 60);
         uint32_t minute = interval_start % (60 * 60) / 60;
@@ -551,7 +541,7 @@ private:
 
     void displayIntervalEnd(int selected_item)
     {
-        const AuthenticateData *item = (*authenticate_list)[selected_item];
+        const AuthenticateData *item = (*authList)[selected_item];
         uint32_t interval_end = item->getIntervalEnd();
         uint32_t hour = interval_end % (60 * 60 * 24) / (60 * 60);
         uint32_t minute = interval_end % (60 * 60) / 60;

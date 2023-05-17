@@ -165,53 +165,27 @@ void loop()
 
         if (ioButtonGetSinglePressStates(BUTTON_E_PRESSED_BIT))
         {
-            uiStateMachine.update(UiStateMachine::Button::ENTER, current_millis);
+            uiStateMachine.Update(UiStateMachine::Button::ENTER, current_millis);
         }
         else if (ioButtonGetSinglePressStates(BUTTON_2_PRESSED_BIT))
         {
-            uiStateMachine.update(UiStateMachine::Button::BACK, current_millis);
+            uiStateMachine.Update(UiStateMachine::Button::BACK, current_millis);
         }
         else if (ioButtonGetSinglePressStates(BUTTON_1_PRESSED_BIT))
         {
-            uiStateMachine.update(UiStateMachine::Button::LEFT, current_millis);
+            uiStateMachine.Update(UiStateMachine::Button::LEFT, current_millis);
         }
         else if (ioButtonGetSinglePressStates(BUTTON_3_PRESSED_BIT))
         {
-            uiStateMachine.update(UiStateMachine::Button::RIGHT, current_millis);
+            uiStateMachine.Update(UiStateMachine::Button::RIGHT, current_millis);
         }
         else
         {
-            uiStateMachine.update(UiStateMachine::Button::NONE, current_millis);
+            uiStateMachine.Update(UiStateMachine::Button::NONE, current_millis);
         }
 
         dataListManager.updateEepromFromList();
     }
-
-#ifdef DEBUG
-    static unsigned long lastMillisDebug = 0;
-    if (current_millis - lastMillisDebug > (15 * 1000))
-    {
-        lastMillisDebug = current_millis;
-
-        // EEPROM_MemoryImage_Update();
-        // for (uint16_t i = 0; i < EEPROM_GetSize(); i++)
-        // {
-        //     uint8_t data;
-        //     char buffer[4 + 1];
-        //     EEPROM_Read(i, &data, 1);
-        //     sprintf(buffer, "%02X", data);
-        //     DEBUG_PRINT(buffer);
-        //     if (i % 32 == 31)
-        //     {
-        //         DEBUG_PRINT("\r\n");
-        //     }
-        //     else
-        //     {
-        //         DEBUG_PRINT(" ");
-        //     }
-        // }
-    }
-#endif /* DEBUG */
 
     // Handle communication tasks the most frequently to avoid missing messages and timeouts
     WIFI_HandleClients();
