@@ -18,7 +18,7 @@
 /**
  * @brief Maximum size of the log list
  */
-#define LOG_LIST_MAX_SIZE (8192 / 2 / 14)
+#define LOG_LIST_MAX_SIZE 273
 
 /**
  * @brief This class represents a list of logs.

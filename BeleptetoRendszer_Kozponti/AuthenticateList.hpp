@@ -19,7 +19,7 @@
 /**
  * @brief Size of the authentication list.
  */
-#define DATA_LIST_SIZE 128
+#define AUTH_LIST_SIZE 145
 
 class AuthenticateList
 {
@@ -27,7 +27,7 @@ private:
     /**
      * @brief List of the authentication data.
      */
-    CircularBuffer<AuthenticateData, DATA_LIST_SIZE> data_list;
+    CircularBuffer<AuthenticateData, AUTH_LIST_SIZE> data_list;
 
 public:
     /**
