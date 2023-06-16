@@ -12,8 +12,7 @@
 
 #include <Arduino.h>
 
-static uint32_t realtime = 0;
-static unsigned long realtimeMillis = 0;
+static uint64_t realtimeMillis = 0;
 
 static bool isRealtimeSet = false;
 
@@ -26,8 +25,8 @@ static unsigned long lastMillis = 0;
 void REALTIME_Set(uint32_t time)
 {
     lastMillis = millis();
-    realtime = time;
-    realtimeMillis = time * 1000;
+    realtimeMillis = (uint64_t)time * 1000;
+
     isRealtimeSet = true;
 }
 
@@ -37,17 +36,18 @@ void REALTIME_Set(uint32_t time)
  */
 uint32_t REALTIME_Get(void)
 {
-    if (isRealtimeSet)
+    if (!isRealtimeSet)
     {
-        unsigned long currentMillis = millis();
-        unsigned long elapsedMillis = currentMillis - lastMillis;
-        lastMillis = currentMillis;
-
-        realtimeMillis += elapsedMillis;
-        realtime = (uint32_t)(realtimeMillis / 1000);
+        return 0;
     }
 
-    return realtime;
+    unsigned long currentMillis = millis();
+    unsigned long elapsedMillis = currentMillis - lastMillis;
+    lastMillis = currentMillis;
+
+    realtimeMillis += elapsedMillis;
+
+    return (uint32_t)(realtimeMillis / 1000);
 }
 
 /**

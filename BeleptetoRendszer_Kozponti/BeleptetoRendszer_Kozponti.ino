@@ -21,7 +21,7 @@
 #include "UiStateMachine.hpp"
 #include "wifi.h"
 
-#define DEBUG 0
+// #define DEBUG 0
 
 #ifdef DEBUG
 #define DEBUG_PRINT(str) Serial.print(str)
@@ -149,12 +149,7 @@ void loop()
         lastMillisFast = current_millis;
 
         // Sample buttons frequently
-
         ioButtonSample();
-
-        digitalWrite(LED_1_PIN, ledState);
-        digitalWrite(LED_2_PIN, ledState);
-        ledState = !ledState;
     }
 
     if (current_millis - lastMillisSlow > 500)
@@ -278,8 +273,8 @@ void ioPinsInit(void)
     pinMode(LED_2_PIN, OUTPUT);
     pinMode(LED_3_PIN, OUTPUT);
 
-    digitalWrite(LED_1_PIN, LED_OFF);
-    digitalWrite(LED_2_PIN, LED_OFF);
+    digitalWrite(LED_1_PIN, LED_ON);
+    digitalWrite(LED_2_PIN, LED_ON);
     digitalWrite(LED_3_PIN, LED_ON);
 }
 
